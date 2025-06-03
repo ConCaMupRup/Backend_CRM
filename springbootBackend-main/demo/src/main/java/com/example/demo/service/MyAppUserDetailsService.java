@@ -17,10 +17,12 @@ public class MyAppUserDetailsService implements UserDetailsService {
         MyAppUser user = userRepository.findByEmail(email)
             .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
 
+        // Thêm prefix "ROLE_" vào tên role
+        String roleName = user.getRole().getName();
         return User.builder()
                 .username(user.getEmail())
                 .password(user.getPassword())
-                .roles(user.getRole().getName()) // getRole() trả về đối tượng Role có getName()
+                .authorities("ROLE_" + roleName) // Thêm ROLE_ prefix
                 .build();
     }
 }

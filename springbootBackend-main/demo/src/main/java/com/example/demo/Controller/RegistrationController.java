@@ -67,21 +67,9 @@ public class RegistrationController {
         user.setEmail(signupRequest.getEmail());
         user.setPassword(passwordEncoder.encode(signupRequest.getPassword()));
 
-        // Determine role based on username or email
-        final String roleName;
-        String emailLower = signupRequest.getEmail().toLowerCase();
-        String usernameLower = signupRequest.getUsername().toLowerCase();
-        
-        if (emailLower.contains("admin@") || usernameLower.equals("admin")) {
-            roleName = "ADMIN";
-        } else if (emailLower.contains("admin1@") || usernameLower.equals("admin1")) {
-            roleName = "ADMIN1";
-        } else {
-            roleName = "USER";
-        }
-
-        Role userRole = roleRepository.findByName(roleName)
-                .orElseThrow(() -> new RuntimeException("Role " + roleName + " not found"));
+        // Mặc định mọi tài khoản mới đều là USER
+        Role userRole = roleRepository.findByName("USER")
+                .orElseThrow(() -> new RuntimeException("Role USER not found"));
         user.setRole(userRole);
         user.setVerified(false);
 
@@ -137,17 +125,9 @@ public class RegistrationController {
         }
 
         String token = JwtTokenUtil.generateToken(user.getEmail());
-        String roleName = user.getRole().getName();
 
-        Map<String, Object> response = new HashMap<>();
+        Map<String, String> response = new HashMap<>();
         response.put("token", token);
-        response.put("role", roleName);
-        response.put("menu", menuService.generateMenuForRole(roleName));
-        response.put("user", Map.of(
-            "id", user.getId(),
-            "username", user.getUsername(),
-            "email", user.getEmail()
-        ));
 
         return ResponseEntity.ok(response);
     }

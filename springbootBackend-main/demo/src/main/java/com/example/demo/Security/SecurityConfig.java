@@ -61,7 +61,9 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/req/signup/verify").permitAll()
                 .requestMatchers(HttpMethod.POST, "/req/login").permitAll()
                 .requestMatchers("/error").permitAll()
-                .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("/api/users/me").authenticated()
+                .requestMatchers("/api/users/roles").hasAuthority("ROLE_SUPERADMIN")
+                .requestMatchers("/api/users/**").hasAuthority("ROLE_SUPERADMIN")
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

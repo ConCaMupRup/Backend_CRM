@@ -1,11 +1,19 @@
 -- Insert roles if not exists
 INSERT INTO roles (name, description) 
-SELECT 'ADMIN', 'Administrator with full access'
+SELECT 'SUPERADMIN', 'Super Administrator with all access'
+WHERE NOT EXISTS (SELECT 1 FROM roles WHERE name = 'SUPERADMIN');
+
+INSERT INTO roles (name, description) 
+SELECT 'ADMIN', 'Administrator with limited access'
 WHERE NOT EXISTS (SELECT 1 FROM roles WHERE name = 'ADMIN');
 
 INSERT INTO roles (name, description)
 SELECT 'USER', 'Regular user with limited access'
 WHERE NOT EXISTS (SELECT 1 FROM roles WHERE name = 'USER');
+
+INSERT INTO roles (name, description)
+SELECT 'SALE', 'Sales staff with product and contract management access'
+WHERE NOT EXISTS (SELECT 1 FROM roles WHERE name = 'SALE');
 
 -- Insert permissions for User Management
 INSERT INTO permissions (name, description, module_code) VALUES
@@ -28,12 +36,39 @@ INSERT INTO permissions (name, description, module_code) VALUES
 ('EDIT_PRODUCT', 'Chỉnh sửa sản phẩm', 'PRODUCT_MANAGEMENT'),
 ('DELETE_PRODUCT', 'Xóa sản phẩm', 'PRODUCT_MANAGEMENT');
 
--- Assign all permissions to ADMIN role
+-- Insert permissions for Contract Management
+INSERT INTO permissions (name, description, module_code) VALUES
+('VIEW_CONTRACTS', 'Xem danh sách hợp đồng', 'CONTRACT_MANAGEMENT'),
+('CREATE_CONTRACT', 'Tạo hợp đồng mới', 'CONTRACT_MANAGEMENT'),
+('EDIT_CONTRACT', 'Chỉnh sửa hợp đồng', 'CONTRACT_MANAGEMENT'),
+('DELETE_CONTRACT', 'Xóa hợp đồng', 'CONTRACT_MANAGEMENT'),
+('APPROVE_CONTRACT', 'Phê duyệt hợp đồng', 'CONTRACT_MANAGEMENT');
+
+-- Assign all permissions to SUPERADMIN role
 INSERT INTO role_permissions (role_id, permission_id)
 SELECT r.id, p.id
 FROM roles r
 CROSS JOIN permissions p
-WHERE r.name = 'ADMIN';
+WHERE r.name = 'SUPERADMIN';
+
+-- Assign permissions to ADMIN role (all except EDIT_CONTRACT)
+INSERT INTO role_permissions (role_id, permission_id)
+SELECT r.id, p.id
+FROM roles r
+CROSS JOIN permissions p
+WHERE r.name = 'ADMIN'
+AND p.name NOT IN ('EDIT_CONTRACT');
+
+-- Assign permissions to SALE role
+INSERT INTO role_permissions (role_id, permission_id)
+SELECT r.id, p.id
+FROM roles r
+CROSS JOIN permissions p
+WHERE r.name = 'SALE'
+AND (
+    p.name IN ('VIEW_PRODUCTS', 'CREATE_PRODUCT', 'EDIT_PRODUCT', 'DELETE_PRODUCT', 'VIEW_USERS') -- Product permissions
+    OR p.name IN ('VIEW_CONTRACTS', 'EDIT_CONTRACT') -- Contract permissions
+);
 
 -- Assign limited permissions to USER role
 INSERT INTO role_permissions (role_id, permission_id)
@@ -41,7 +76,7 @@ SELECT r.id, p.id
 FROM roles r
 CROSS JOIN permissions p
 WHERE r.name = 'USER'
-AND p.name IN ('VIEW_USERS', 'VIEW_PRODUCTS');
+AND p.name IN ('VIEW_USERS', 'VIEW_PRODUCTS', 'VIEW_CONTRACTS');
 
 SELECT * FROM roles;
 SELECT * FROM permissions;
