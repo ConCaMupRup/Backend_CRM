@@ -1,0 +1,38 @@
+server:
+  error:
+    include-message: always
+    include-binding-errors: always
+
+spring:
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: huynguyentienhsgs02102002@gmail.com        # ← THAY bằng email thật
+    password: hety xacx xsll zfjr           # ← THAY bằng mật khẩu ứng dụng (không phải mật khẩu Gmail)
+    protocol: smtp
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+      mail.debug: true                     # ← bật debug giúp dễ kiểm tra lỗi gửi mail
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/registration
+    driver-class-name: org.postgresql.Driver
+    username: postgres                     # ← DB username thực tế
+    password: 123456                       # ← DB password thực tế
+
+
+  jpa:
+    hibernate:
+      ddl-auto: update                     # auto update bảng nếu có thay đổi entity
+    show-sql: true                         # hiện SQL query ở console
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true                   # format đẹp khi log SQL
+
+logging:
+  level:
+    org.springframework.security: DEBUG    # ← xem chi tiết flow security để debug 401
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
